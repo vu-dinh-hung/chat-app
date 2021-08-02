@@ -1,5 +1,5 @@
-from flask import Flask
-from flask_socketio import SocketIO
+from flask import Flask, render_template
+from flask_socketio import SocketIO, emit
 from main.config import config
 
 
@@ -13,8 +13,13 @@ app = _init_app()
 
 
 @app.get('/')
-def hello():
-    return '<h1>hello world</h1>'
+def index():
+    return render_template('index.html')
 
 
 socketio = SocketIO(app)
+
+
+@socketio.event
+def user_message(message):
+    emit('broadcast_message', message, broadcast=True, include_self=False)
