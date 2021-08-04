@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Socket.IO chat</title>
     <style>
       body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
@@ -24,6 +26,25 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
   <script>
+    let httpRequest = new XMLHttpRequest()
+    httpRequest.onreadystatechange = () => {
+      if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
+        new_messages = JSON.parse(httpRequest.responseText)
+        messages = document.getElementById('messages')
+        console.log('new messages:', new_messages)
+        new_messages.forEach((message) => {
+          let li = document.createElement('li')
+          li.appendChild(document.createTextNode(message.text))
+          if (message.username === localStorage.getItem('chat_app_user')) {
+            li.classList.add('own')
+          }
+          messages.appendChild(li)
+        })
+      }
+    }
+    httpRequest.open('GET', '/messages')
+    httpRequest.send()
+
     var socket = io()
 
     var form = document.getElementById('form')
@@ -32,7 +53,7 @@
     form.addEventListener('submit', (e) => {
       e.preventDefault()
       if (input.value) {
-        socket.emit('user_message', input.value)
+        socket.emit('user_message', {text: input.value, username: localStorage.getItem('chat_app_user')})
         var item = document.createElement('li')
         item.textContent = input.value
         item.classList.add('own')
@@ -43,10 +64,14 @@
     })
 
     socket.on('broadcast_message', (message) => {
-      var item = document.createElement('li')
-      item.textContent = message
-      messages.appendChild(item)
-      window.scrollTo(0, document.body.scrollHeight)
+      if (message.username === localStorage.getItem('chat_app_user')) {
+        messages = document.getElementById('messages')
+      } else{
+        var item = document.createElement('li')
+        item.textContent = message.text
+        messages.appendChild(item)
+        window.scrollTo(0, document.body.scrollHeight)
+      }
     })
   </script>
   </body>

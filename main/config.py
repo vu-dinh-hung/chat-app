@@ -1,4 +1,5 @@
 import os
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -22,10 +23,7 @@ class TestConfig(Config):
     TESTING = True
 
 
-lookup = {
-    'development': DevelopmentConfig,
-    'test': TestConfig
-}
+lookup = {"development": DevelopmentConfig, "test": TestConfig}
 
-env = os.getenv('ENVIRONMENT', 'development')
+env = os.getenv("ENVIRONMENT", "development")
 config = lookup[env]
